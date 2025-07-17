@@ -256,12 +256,8 @@ app.post('/api/expressions', authenticateToken, async (req, res) => {
 
         console.log(`Saving expression for user: ${req.user.userId}`);
 
-        // Get the highest ID for this user and increment it
-        const lastExpression = await Expression.findOne({ userId: req.user.userId }).sort({ id: -1 });
-        const newId = lastExpression ? lastExpression.id + 1 : 1;
-        
+        // Create new expression with auto-generated MongoDB ObjectId
         const newExpression = new Expression({
-            id: newId,
             userId: req.user.userId,
             draft,
             english,
@@ -272,7 +268,7 @@ app.post('/api/expressions', authenticateToken, async (req, res) => {
         });
 
         const savedExpression = await newExpression.save();
-        console.log(`Expression saved successfully with ID: ${savedExpression.id}`);
+        console.log(`Expression saved successfully with ID: ${savedExpression._id}`);
         
         res.status(201).json({ 
             success: true, 
@@ -287,13 +283,6 @@ app.post('/api/expressions', authenticateToken, async (req, res) => {
             return res.status(400).json({ 
                 success: false, 
                 message: 'Validation error: ' + error.message 
-            });
-        }
-        
-        if (error.code === 11000) {
-            return res.status(409).json({ 
-                success: false, 
-                message: 'Duplicate expression ID for this user' 
             });
         }
         
@@ -314,7 +303,7 @@ app.put('/api/expressions/:id/memory', authenticateToken, async (req, res) => {
     }
 
     try {
-        const expression = await Expression.findOne({ id: parseInt(id), userId: req.user.userId });
+        const expression = await Expression.findOne({ _id: id, userId: req.user.userId });
 
         if (!expression) {
             return res.status(404).json({ message: 'Expression not found' });
@@ -338,7 +327,7 @@ app.delete('/api/expressions/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
 
     try {
-        const deletedExpression = await Expression.findOneAndDelete({ id: parseInt(id), userId: req.user.userId });
+        const deletedExpression = await Expression.findOneAndDelete({ _id: id, userId: req.user.userId });
 
         if (!deletedExpression) {
             return res.status(404).json({ success: false, message: 'Expression not found' });

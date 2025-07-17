@@ -8,6 +8,7 @@
     "start": "node server.js",
     "migrate": "node migrate.js",
     "cleanup": "node cleanup.js",
+    "reset": "node reset-database.js",
     "dev": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

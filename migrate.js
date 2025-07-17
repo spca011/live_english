@@ -38,7 +38,6 @@ const migrateData = async () => {
             // Insert data into MongoDB with userId
             for (const expr of jsonData.expressions) {
                 const newExpression = new Expression({
-                    id: expr.id,
                     userId: defaultUser._id.toString(), // Add required userId field
                     draft: expr.draft,
                     english: expr.english,
@@ -48,8 +47,8 @@ const migrateData = async () => {
                     lastStudyDate: expr.lastStudyDate ? new Date(expr.lastStudyDate) : null
                 });
 
-                await newExpression.save();
-                console.log(`Migrated expression ${expr.id}: ${expr.draft}`);
+                const savedExpression = await newExpression.save();
+                console.log(`Migrated expression ${savedExpression._id}: ${expr.draft}`);
             }
 
             console.log('Migration completed successfully!');

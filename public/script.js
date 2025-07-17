@@ -365,10 +365,10 @@ function updateStudyUI() {
             </div>
             <div class="memory-controls">
                 <label class="memory-checkbox">
-                    <input type="checkbox" class="memory-checkbox-input" data-id="${exp.id}" ${exp.isMemory ? 'checked' : ''}>
+                    <input type="checkbox" class="memory-checkbox-input" data-id="${exp._id}" ${exp.isMemory ? 'checked' : ''}>
                     <span>암기 완료</span>
                 </label>
-                <button class="delete-btn" data-id="${exp.id}">삭제</button>
+                <button class="delete-btn" data-id="${exp._id}">삭제</button>
             </div>
         `;
         flashcardsDiv.appendChild(card);
@@ -423,7 +423,7 @@ document.getElementById('flashcards').addEventListener('click', async function(e
                     throw new Error(result.message || 'Failed to delete');
                 }
                 target.closest('.flashcard').remove();
-                expressions = expressions.filter(e => e.id != id);
+                expressions = expressions.filter(e => e._id != id);
                 updateStats();
             } catch (error) {
                 handleError(error);
@@ -458,7 +458,7 @@ document.getElementById('flashcards').addEventListener('change', async function(
             if (!response.ok) {
                 throw new Error(result.message || 'Failed to update');
             }
-            const index = expressions.findIndex(e => e.id == id);
+            const index = expressions.findIndex(e => e._id == id);
             if (index !== -1) {
                 expressions[index].isMemory = isMemory;
                 updateStats();

@@ -1,10 +1,6 @@
 import mongoose from 'mongoose';
 
 const expressionSchema = new mongoose.Schema({
-    id: {
-        type: Number,
-        required: true
-    },
     userId: {
         type: String,
         required: true,
@@ -36,8 +32,8 @@ const expressionSchema = new mongoose.Schema({
     }
 });
 
-// Create compound index for unique ID per user
-expressionSchema.index({ id: 1, userId: 1 }, { unique: true });
+// Add index for better query performance
+expressionSchema.index({ userId: 1, dateTime: -1 });
 
 const Expression = mongoose.model('Expression', expressionSchema);
 
