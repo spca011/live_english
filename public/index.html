@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌊 Live English</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <div class="ocean-wave"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>🌊 Live English</h1>
+                    <p>당신이 원하는 영어 표현을 찾아보세요!</p>
+                </div>
+                <div class="auth-section">
+                    <div id="user-info" class="user-info" style="display: none;">
+                        <img id="user-avatar" class="user-avatar" src="" alt="User Avatar">
+                        <span id="user-name" class="user-name"></span>
+                        <button id="logout-btn" class="logout-btn">로그아웃</button>
+                    </div>
+                    <div id="login-section" class="login-section">
+                        <div id="g_id_onload"
+                             data-client_id="760844845972-enrkoirveojmiemk294h3god1h3l2686.apps.googleusercontent.com"
+                             data-callback="handleCredentialResponse"
+                             data-auto_prompt="false">
+                        </div>
+                        <div class="g_id_signin" 
+                             data-type="standard"
+                             data-size="large"
+                             data-theme="outline"
+                             data-text="sign_in_with"
+                             data-shape="rectangular"
+                             data-logo_alignment="left">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="auth-loading" class="auth-loading">
+            <div class="spinner"></div>
+            <p>인증 상태를 확인하는 중...</p>
+        </div>
+
+        <div id="login-required" class="login-required" style="display: none;">
+            <h2>🔐 로그인이 필요합니다</h2>
+            <p>Live English를 사용하려면 Google 계정으로 로그인해주세요.</p>
+            <div class="login-prompt">
+                <div class="g_id_signin" 
+                     data-type="standard"
+                     data-size="large"
+                     data-theme="filled_blue"
+                     data-text="continue_with"
+                     data-shape="rectangular"
+                     data-logo_alignment="left">
+                </div>
+            </div>
+        </div>
+
+        <div id="main-content" class="main-card" style="display: none;">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('search')">🔍 표현 찾기</button>
+                <button class="tab" onclick="switchTab('study')">📚 복습하기</button>
+            </div>
+            
+            <div id="search-tab" class="tab-content active">
+                <div class="input-section">
+                    <div class="input-group">
+                        <input type="text" id="userInput" class="input-field" 
+                               placeholder="모르는 영어 표현을 한글이나 영어로 입력하세요... 🌴" 
+                               onkeypress="handleEnter(event)">
+                    </div>
+                    <button class="submit-btn" onclick="searchExpressions()">
+                        🏄‍♂️ 영어 표현 찾기
+                    </button>
+                </div>
+                
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>바다에서 완벽한 표현을 찾고 있어요... 🌊</p>
+                </div>
+                
+                <div id="suggestions" class="suggestions"></div>
+                
+                <div id="successMessage" class="success-message"></div>
+            </div>
+            
+            <div id="study-tab" class="tab-content">
+                <div class="stats" id="stats" style="display: none;">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalCount">0</div>
+                        <div class="stat-label">총 표현</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="memorizedCount">0</div>
+                        <div class="stat-label">암기 완료</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="remainingCount">0</div>
+                        <div class="stat-label">학습 중</div>
+                    </div>
+                </div>
+                
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="filterCards('all')">전체</button>
+                    <button class="filter-tab" onclick="filterCards('not-memorized')">학습 중</button>
+                    <button class="filter-tab" onclick="filterCards('memorized')">암기 완료</button>
+                </div>
+                
+                <div class="study-controls">
+                    <button class="study-btn shuffle-btn" onclick="shuffleCards()">🎲 카드 섞기</button>
+                    <button class="study-btn refresh-btn" onclick="loadStudyData()">🔄 새로고침</button>
+                </div>
+                
+                <div id="flashcards" class="flashcard-container"></div>
+                
+                <div id="emptyState" class="empty-state">
+                    <h3>🏖️ 아직 저장된 표현이 없어요</h3>
+                    <p>표현 찾기에서 마음에 드는 영어 표현을 저장해보세요!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
