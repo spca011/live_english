@@ -6,11 +6,6 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "migrate": "node migrate.js",
-    "cleanup": "node cleanup.js",
-    "reset": "node reset-database.js",
-    "fix-indexes": "node fix-database-indexes.js",
-    "check-env": "node check-env.js",
     "dev": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
