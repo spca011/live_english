@@ -141,6 +141,18 @@ function updateUIForUnauthenticatedUser() {
 }
 
 function getAuthHeaders() {
+    console.log('Getting auth headers - authToken exists:', !!authToken);
+    if (!authToken) {
+        console.error('No authToken in getAuthHeaders - checking localStorage');
+        const savedToken = localStorage.getItem('authToken');
+        if (savedToken) {
+            console.log('Found token in localStorage, restoring');
+            authToken = savedToken;
+        } else {
+            console.error('No token found in localStorage either');
+            throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+        }
+    }
     return {
         'Authorization': `Bearer ${authToken}`,
         'Content-Type': 'application/json'
@@ -239,9 +251,22 @@ async function searchExpressions() {
 }
 
 async function saveExpression(draft, english) {
+    console.log('=== SAVE EXPRESSION DEBUG ===');
+    console.log('authToken exists:', !!authToken);
+    console.log('authToken value:', authToken ? authToken.substring(0, 20) + '...' : 'null');
+    console.log('currentUser:', currentUser);
+    console.log('localStorage authToken:', localStorage.getItem('authToken') ? 'exists' : 'missing');
+    
     if (!authToken) {
-        showErrorMessage('로그인이 필요합니다.');
-        return;
+        console.error('No authToken available - attempting to restore from localStorage');
+        const savedToken = localStorage.getItem('authToken');
+        if (savedToken) {
+            authToken = savedToken;
+            console.log('Restored authToken from localStorage');
+        } else {
+            showErrorMessage('로그인이 필요합니다. 페이지를 새로고침해주세요.');
+            return;
+        }
     }
     
     const successMessage = document.getElementById('successMessage');
@@ -249,18 +274,37 @@ async function saveExpression(draft, english) {
     successMessage.style.display = 'block';
 
     try {
+        console.log('Attempting to save expression...');
         const response = await fetch(`${API_BASE_URL}/api/expressions`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify({ draft, english })
         });
+        
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        
         const result = await response.json();
+        console.log('Server response:', result);
+        
         if (!response.ok) {
+            // Handle authentication errors
+            if (response.status === 401 || response.status === 403) {
+                console.error('Authentication error - clearing tokens');
+                authToken = null;
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('currentUser');
+                showErrorMessage('로그인이 만료되었습니다. 페이지를 새로고침하고 다시 로그인해주세요.');
+                return;
+            }
             throw new Error(result.message || 'Failed to save');
         }
+        
+        console.log('Expression saved successfully');
         successMessage.textContent = result.message;
         setTimeout(() => { successMessage.style.display = 'none'; }, 3000);
     } catch (error) {
+        console.error('Save expression error:', error);
         handleError(error);
     }
 }
