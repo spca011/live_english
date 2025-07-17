@@ -249,6 +249,13 @@ app.post('/api/expressions', authenticateToken, async (req, res) => {
     }
 
     try {
+        // Validate user information
+        if (!req.user || !req.user.userId) {
+            return res.status(401).json({ success: false, message: 'User authentication required' });
+        }
+
+        console.log(`Saving expression for user: ${req.user.userId}`);
+
         // Get the highest ID for this user and increment it
         const lastExpression = await Expression.findOne({ userId: req.user.userId }).sort({ id: -1 });
         const newId = lastExpression ? lastExpression.id + 1 : 1;
@@ -264,11 +271,36 @@ app.post('/api/expressions', authenticateToken, async (req, res) => {
             lastStudyDate: null
         });
 
-        await newExpression.save();
-        res.status(201).json({ success: true, message: 'Expression saved successfully!', expression: newExpression });
+        const savedExpression = await newExpression.save();
+        console.log(`Expression saved successfully with ID: ${savedExpression.id}`);
+        
+        res.status(201).json({ 
+            success: true, 
+            message: 'Expression saved successfully!', 
+            expression: savedExpression 
+        });
     } catch (error) {
         console.error('Failed to save expression:', error);
-        res.status(500).json({ success: false, message: 'Failed to save expression' });
+        
+        // Handle specific MongoDB errors
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Validation error: ' + error.message 
+            });
+        }
+        
+        if (error.code === 11000) {
+            return res.status(409).json({ 
+                success: false, 
+                message: 'Duplicate expression ID for this user' 
+            });
+        }
+        
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to save expression to database' 
+        });
     }
 });
 

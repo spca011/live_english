@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import fs from 'fs/promises';
 import Expression from './models/Expression.js';
+import User from './models/User.js';
 
 const migrateData = async () => {
     try {
@@ -16,14 +17,29 @@ const migrateData = async () => {
         if (jsonData.expressions && jsonData.expressions.length > 0) {
             console.log(`Found ${jsonData.expressions.length} expressions to migrate`);
 
-            // Clear existing data in MongoDB (optional)
-            await Expression.deleteMany({});
-            console.log('Cleared existing MongoDB data');
+            // Option 1: Create a default user for existing expressions
+            let defaultUser = await User.findOne({ email: 'default@example.com' });
+            if (!defaultUser) {
+                console.log('Creating default user for existing expressions...');
+                defaultUser = new User({
+                    googleId: 'default-user-id',
+                    email: 'default@example.com',
+                    name: 'Default User',
+                    picture: null
+                });
+                await defaultUser.save();
+                console.log('Default user created');
+            }
 
-            // Insert data into MongoDB
+            // Clear existing expressions in MongoDB (to avoid duplicates)
+            await Expression.deleteMany({});
+            console.log('Cleared existing MongoDB expression data');
+
+            // Insert data into MongoDB with userId
             for (const expr of jsonData.expressions) {
                 const newExpression = new Expression({
                     id: expr.id,
+                    userId: defaultUser._id.toString(), // Add required userId field
                     draft: expr.draft,
                     english: expr.english,
                     dateTime: new Date(expr.dateTime),
@@ -37,6 +53,7 @@ const migrateData = async () => {
             }
 
             console.log('Migration completed successfully!');
+            console.log(`All expressions have been assigned to user: ${defaultUser.email}`);
         } else {
             console.log('No expressions found in db.json');
         }
