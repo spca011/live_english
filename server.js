@@ -60,6 +60,17 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 // JWT secret
 const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret';
 
+// Check for required environment variables
+if (!process.env.GOOGLE_CLIENT_ID) {
+    console.warn('WARNING: GOOGLE_CLIENT_ID not set in environment variables');
+}
+if (!process.env.GEMINI_API_KEY) {
+    console.warn('WARNING: GEMINI_API_KEY not set in environment variables');
+}
+if (!process.env.JWT_SECRET) {
+    console.warn('WARNING: JWT_SECRET not set - using default (not secure for production)');
+}
+
 // Authentication middleware
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -251,10 +262,11 @@ app.post('/api/expressions', authenticateToken, async (req, res) => {
     try {
         // Validate user information
         if (!req.user || !req.user.userId) {
+            console.error('Authentication failed - no user or userId in request');
             return res.status(401).json({ success: false, message: 'User authentication required' });
         }
 
-        console.log(`Saving expression for user: ${req.user.userId}`);
+        console.log(`Saving expression for user: ${req.user.userId} (${req.user.email})`);
 
         // Create new expression with auto-generated MongoDB ObjectId
         const newExpression = new Expression({
@@ -276,7 +288,9 @@ app.post('/api/expressions', authenticateToken, async (req, res) => {
             expression: savedExpression 
         });
     } catch (error) {
-        console.error('Failed to save expression:', error);
+        console.error('Failed to save expression - Error details:', error.message);
+        console.error('Error name:', error.name);
+        console.error('Full error:', error);
         
         // Handle specific MongoDB errors
         if (error.name === 'ValidationError') {
@@ -288,7 +302,8 @@ app.post('/api/expressions', authenticateToken, async (req, res) => {
         
         res.status(500).json({ 
             success: false, 
-            message: 'Failed to save expression to database' 
+            message: 'Failed to save expression to database',
+            error: error.message
         });
     }
 });
